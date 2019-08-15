@@ -47,11 +47,15 @@ static inline void KEY_INIT(void)
     KEY_POWER_OFF();
 }
 
-const uint32_t KEY_COLS[] = {30, 31, 2, 3};
+const uint32_t KEY_COLS[] = {30, 31,  2};
 const uint32_t KEY_ROWS[] = {27, 28, 29};
 
 static inline void KEY_SELECT(uint8_t ROW, uint8_t COL)
 {
-    nrf_gpio_pin_set(KEY_COLS[COL]);
-    nrf_gpio_pin_set(KEY_ROWS[ROW]);
+    nrf_gpio_pin_set(3);
+
+    for (uint8_t i = 0; i < 3; i++) {
+      if ((COL >> i) & 0x01) nrf_gpio_pin_set(KEY_COLS[i]);
+      if ((ROW >> i) & 0x01) nrf_gpio_pin_set(KEY_ROWS[i]);
+    }
 }

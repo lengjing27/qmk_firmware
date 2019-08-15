@@ -1,25 +1,10 @@
 #nrf.mk for common nrf sdk files
 
 #PROJECT_NAME     := ble_app_hids_keyboard_pca10040_s132
-TARGETS          := nrf52832_xxaa
-OUTPUT_DIRECTORY := $(BUILD_DIR)
+#TARGETS          := nrf52832_xxaa
+#OUTPUT_DIRECTORY := $(BUILD_DIR)
 
 SDK_ROOT := $(TOP_DIR)/lib/nRF5_SDK_15.3.0_59ac345
-
-# Define linker script file here
-ifneq ("$(wildcard $(KEYBOARD_PATH_5)/ld/$(MCU_LDSCRIPT).ld)","")
-    LDSCRIPT = $(KEYBOARD_PATH_5)/ld/$(MCU_LDSCRIPT).ld
-else ifneq ("$(wildcard $(KEYBOARD_PATH_4)/ld/$(MCU_LDSCRIPT).ld)","")
-    LDSCRIPT = $(KEYBOARD_PATH_4)/ld/$(MCU_LDSCRIPT).ld
-else ifneq ("$(wildcard $(KEYBOARD_PATH_3)/ld/$(MCU_LDSCRIPT).ld)","")
-    LDSCRIPT = $(KEYBOARD_PATH_3)/ld/$(MCU_LDSCRIPT).ld
-else ifneq ("$(wildcard $(KEYBOARD_PATH_2)/ld/$(MCU_LDSCRIPT).ld)","")
-    LDSCRIPT = $(KEYBOARD_PATH_2)/ld/$(MCU_LDSCRIPT).ld
-else ifneq ("$(wildcard $(KEYBOARD_PATH_1)/ld/$(MCU_LDSCRIPT).ld)","")
-    LDSCRIPT = $(KEYBOARD_PATH_1)/ld/$(MCU_LDSCRIPT).ld
-else
-    LDSCRIPT = $(SDK_ROOT)/modules/nrfx/mdk/$(MCU_LDSCRIPT).ld
-endif
 
 # Source files common to all targets
 SRC += \
@@ -230,6 +215,21 @@ COMMON_VPATH += \
   $(SDK_ROOT)/components/libraries/stack_guard \
   $(SDK_ROOT)/components/libraries/log/src \
 
+# Define linker script file here
+ifneq ("$(wildcard $(KEYBOARD_PATH_5)/ld/$(MCU_LDSCRIPT).ld)","")
+    LDSCRIPT = $(KEYBOARD_PATH_5)/ld/$(MCU_LDSCRIPT).ld
+else ifneq ("$(wildcard $(KEYBOARD_PATH_4)/ld/$(MCU_LDSCRIPT).ld)","")
+    LDSCRIPT = $(KEYBOARD_PATH_4)/ld/$(MCU_LDSCRIPT).ld
+else ifneq ("$(wildcard $(KEYBOARD_PATH_3)/ld/$(MCU_LDSCRIPT).ld)","")
+    LDSCRIPT = $(KEYBOARD_PATH_3)/ld/$(MCU_LDSCRIPT).ld
+else ifneq ("$(wildcard $(KEYBOARD_PATH_2)/ld/$(MCU_LDSCRIPT).ld)","")
+    LDSCRIPT = $(KEYBOARD_PATH_2)/ld/$(MCU_LDSCRIPT).ld
+else ifneq ("$(wildcard $(KEYBOARD_PATH_1)/ld/$(MCU_LDSCRIPT).ld)","")
+    LDSCRIPT = $(KEYBOARD_PATH_1)/ld/$(MCU_LDSCRIPT).ld
+else
+    LDSCRIPT = $(SDK_ROOT)/modules/nrfx/mdk/$(MCU_LDSCRIPT).ld
+endif
+
 # add sdk_config.h
 ifneq ("$(wildcard $(KEYBOARD_PATH_5)/boards/sdk_config.h)","")
     COMMON_VPATH += $(KEYBOARD_PATH_5)/boards
@@ -244,6 +244,31 @@ else ifneq ("$(wildcard $(KEYBOARD_PATH_1)/boards/sdk_config.h)","")
 else
     COMMON_VPATH += $(SDK_ROOT)/config/$(ARM_NRF52)/config
 endif
+
+# add custom board definitions
+ifdef BOARD
+    ifneq ("$(wildcard $(KEYBOARD_PATH_5)/boards/$(strip $(BOARD)).h)","")
+        COMMON_VPATH += $(KEYBOARD_PATH_5)/boards
+        CFLAGS += -DCUSTOM_BOARD_INC=$(strip $(BOARD))
+    else ifneq ("$(wildcard $(KEYBOARD_PATH_4)/boards/$(strip $(BOARD)).h)","")
+        COMMON_VPATH += $(KEYBOARD_PATH_4)/boards
+        CFLAGS += -DCUSTOM_BOARD_INC=$(strip $(BOARD))
+    else ifneq ("$(wildcard $(KEYBOARD_PATH_3)/boards/$(strip $(BOARD)).h)","")
+        COMMON_VPATH += $(KEYBOARD_PATH_3)/boards
+        CFLAGS += -DCUSTOM_BOARD_INC=$(strip $(BOARD))
+    else ifneq ("$(wildcard $(KEYBOARD_PATH_2)/boards/$(strip $(BOARD)).h)","")
+        COMMON_VPATH += $(KEYBOARD_PATH_2)/boards
+        CFLAGS += -DCUSTOM_BOARD_INC=$(strip $(BOARD))
+    else ifneq ("$(wildcard $(KEYBOARD_PATH_1)/boards/$(strip $(BOARD)).h)","")
+        COMMON_VPATH += $(KEYBOARD_PATH_1)/boards
+        CFLAGS += -DCUSTOM_BOARD_INC=$(strip $(BOARD))
+    else
+        CFLAGS += -DBOARD_PCA10040
+    endif
+else
+    CFLAGS += -DBOARD_PCA10040
+endif
+
 # Libraries common to all targets
 LIB_FILES += \
 
@@ -254,7 +279,7 @@ LIB_FILES += \
 
 # C flags common to all targets
 #CFLAGS += $(OPT)
-CFLAGS += -DBOARD_PCA10040
+
 CFLAGS += -DCONFIG_GPIO_AS_PINRESET
 CFLAGS += -DFLOAT_ABI_HARD
 CFLAGS += -DNRF52
@@ -276,20 +301,20 @@ CFLAGS += -fno-builtin -fshort-enums
 #CXXFLAGS += $(OPT)
 
 # Assembler flags common to all targets
-ASMFLAGS += -g3
-ASMFLAGS += -mcpu=cortex-m4
-ASMFLAGS += -mthumb -mabi=aapcs
-ASMFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
-ASMFLAGS += -DBOARD_PCA10040
-ASMFLAGS += -DCONFIG_GPIO_AS_PINRESET
-ASMFLAGS += -DFLOAT_ABI_HARD
-ASMFLAGS += -DNRF52
-ASMFLAGS += -DNRF52832_XXAA
-ASMFLAGS += -DNRF52_PAN_74
-ASMFLAGS += -DNRF_SD_BLE_API_VERSION=6
-ASMFLAGS += -DS132
-ASMFLAGS += -DSOFTDEVICE_PRESENT
-ASMFLAGS += -DSWI_DISABLE0
+ASFLAGS += -g3
+ASFLAGS += -mcpu=cortex-m4
+ASFLAGS += -mthumb -mabi=aapcs
+ASFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
+ASFLAGS += -DBOARD_PCA10040
+ASFLAGS += -DCONFIG_GPIO_AS_PINRESET
+ASFLAGS += -DFLOAT_ABI_HARD
+ASFLAGS += -DNRF52
+ASFLAGS += -DNRF52832_XXAA
+ASFLAGS += -DNRF52_PAN_74
+ASFLAGS += -DNRF_SD_BLE_API_VERSION=6
+ASFLAGS += -DS132
+ASFLAGS += -DSOFTDEVICE_PRESENT
+ASFLAGS += -DSWI_DISABLE0
 
 # Linker flags
 #LDFLAGS += $(OPT)
@@ -362,7 +387,7 @@ flash_softdevice:
 erase:
 	nrfjprog -f nrf52 --eraseall
 
-SDK_CONFIG_FILE := ../config/sdk_config.h
+SDK_CONFIG_FILE := $(SDK_ROOT)/config/$(ARM_NRF52)/sdk_config.h
 CMSIS_CONFIG_TOOL := $(SDK_ROOT)/external_tools/cmsisconfig/CMSIS_Configuration_Wizard.jar
 sdk_config:
 	java -jar $(CMSIS_CONFIG_TOOL) $(SDK_CONFIG_FILE)

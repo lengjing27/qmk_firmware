@@ -1,5 +1,5 @@
 # make output options
-VERBOSE = yes
+#VERBOSE = yes
 
 ## chip/board settings
 ARM_NRF52 = nrf52832
@@ -39,13 +39,11 @@ MOUSEKEY_ENABLE = no # Mouse keys
 EXTRAKEY_ENABLE = yes# Audio control and System control
 CONSOLE_ENABLE = no# Console for debug
 COMMAND_ENABLE = no # Commands for debug and configuration
-#SLEEP_LED_ENABLE = yes  # Breathing sleep LED during USB suspend
 BACKLIGHT_ENABLE = no
 NKRO_ENABLE = no # USB Nkey Rollover
 CUSTOM_MATRIX = yes # Custom matrix file
 AUDIO_ENABLE = no
-#RGB_MATRIX_ENABLE = custom
-#RGBLIGHT_ENABLE = no
-#RGBLIGHT_CUSTOM_DRIVER = no
 
 # project specific files
+
+SRC += matrix.c
