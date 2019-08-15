@@ -102,6 +102,7 @@ uint8_t matrix_scan(void)
             // If V-USB interrupts in this section we could lose 40us or so
             // and would read invalid value from KEY_STATE.
             //uint8_t last = TIMER_RAW;
+            uint32_t last = DWT->CYCCNT;
 
             KEY_ENABLE();
 
@@ -131,6 +132,9 @@ uint8_t matrix_scan(void)
             //if (TIMER_DIFF_RAW(TIMER_RAW, last) > 20/(1000000/TIMER_RAW_FREQ)) {
             //    matrix[row] = matrix_prev[row];
             //}
+            if ( (DWT->CYCCNT - last) > 20*NRFX_DELAY_CPU_FREQ_MHZ) {
+                matrix[row] = matrix_prev[row];
+            }
 
             wait_us(5);
             KEY_PREV_OFF();
