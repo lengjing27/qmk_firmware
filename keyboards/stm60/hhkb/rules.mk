@@ -1,6 +1,8 @@
+# make output options
+VERBOSE = yes
+
 ## chip/board settings
-MCU_FAMILY = NRF52
-MCU_SERIES = NRF52832
+ARM_NRF52 = nrf52832
 
 # Linker script to use
 # - it should exist either in <nrf_sdk>/config/nrf52832/armgcc

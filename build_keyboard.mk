@@ -229,9 +229,12 @@ ifdef MCU_FAMILY
 else ifdef ARM_ATSAM
     PLATFORM=ARM_ATSAM
     FIRMWARE_FORMAT=bin
+else ifdef ARM_NRF52
+    PLATFORM = NRF_SDK
+    FIRMWARE_FORMAT=hex
 else
     PLATFORM=AVR
-    FIRMWARE_FORMAT?=hex
+    FIRMWARE_FORMAT?=hexh
 endif
 
 ifeq ($(PLATFORM),CHIBIOS)
@@ -261,6 +264,7 @@ ifeq ($(PLATFORM),CHIBIOS)
         OPT_DEFS += -include $(TOP_DIR)/drivers/boards/$(BOARD)/bootloader_defs.h
     endif
 endif
+
 
 # Find all of the config.h files and add them to our CONFIG_H define.
 CONFIG_H :=
@@ -364,6 +368,11 @@ endif
 
 ifeq ($(PLATFORM),CHIBIOS)
     include $(TMK_PATH)/protocol/chibios.mk
+endif
+
+ifeq ($(PLATFORM),NRF_SDK)
+    include $(TMK_PATH)/nrf.mk
+    include $(TMK_PATH)/protocol/nrf.mk
 endif
 
 ifeq ($(strip $(VISUALIZER_ENABLE)), yes)

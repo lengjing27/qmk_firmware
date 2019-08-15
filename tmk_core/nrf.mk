@@ -2,9 +2,9 @@
 
 #PROJECT_NAME     := ble_app_hids_keyboard_pca10040_s132
 TARGETS          := nrf52832_xxaa
-#OUTPUT_DIRECTORY := _build
+OUTPUT_DIRECTORY := $(BUILD_DIR)
 
-SDK_ROOT := $(TO_DIR)/lib/nRF5_SDK_15.3.0_59ac345
+SDK_ROOT := $(TOP_DIR)/lib/nRF5_SDK_15.3.0_59ac345
 
 # Define linker script file here
 ifneq ("$(wildcard $(KEYBOARD_PATH_5)/ld/$(MCU_LDSCRIPT).ld)","")
@@ -22,7 +22,7 @@ else
 endif
 
 # Source files common to all targets
-SRC_FILES += \
+SRC += \
   $(SDK_ROOT)/modules/nrfx/mdk/gcc_startup_nrf52.S \
   $(SDK_ROOT)/components/libraries/log/src/nrf_log_backend_rtt.c \
   $(SDK_ROOT)/components/libraries/log/src/nrf_log_backend_serial.c \
@@ -99,7 +99,7 @@ SRC_FILES += \
   $(SDK_ROOT)/components/softdevice/common/nrf_sdh_soc.c \
 
 # Include folders common to all targets
-INC_FOLDERS += \
+COMMON_VPATH += \
   $(SDK_ROOT)/components/nfc/ndef/generic/message \
   $(SDK_ROOT)/components/nfc/t2t_lib \
   $(SDK_ROOT)/components/nfc/t4t_parser/hl_detection_procedure \
@@ -230,16 +230,30 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/libraries/stack_guard \
   $(SDK_ROOT)/components/libraries/log/src \
 
+# add sdk_config.h
+ifneq ("$(wildcard $(KEYBOARD_PATH_5)/boards/sdk_config.h)","")
+    COMMON_VPATH += $(KEYBOARD_PATH_5)/boards
+else ifneq ("$(wildcard $(KEYBOARD_PATH_4)/boards/sdk_config.h)","")
+    COMMON_VPATH += $(KEYBOARD_PATH_4)/boards
+else ifneq ("$(wildcard $(KEYBOARD_PATH_3)/boards/sdk_config.h)","")
+    COMMON_VPATH += $(KEYBOARD_PATH_3)/boards
+else ifneq ("$(wildcard $(KEYBOARD_PATH_2)/boards/sdk_config.h)","")
+    COMMON_VPATH += $(KEYBOARD_PATH_2)/boards
+else ifneq ("$(wildcard $(KEYBOARD_PATH_1)/boards/sdk_config.h)","")
+    COMMON_VPATH += $(KEYBOARD_PATH_1)/boards
+else
+    COMMON_VPATH += $(SDK_ROOT)/config/$(ARM_NRF52)/config
+endif
 # Libraries common to all targets
 LIB_FILES += \
 
 # Optimization flags
-OPT = -O3 -g3
+#OPT = -O3 -g3
 # Uncomment the line below to enable link time optimization
 #OPT += -flto
 
 # C flags common to all targets
-CFLAGS += $(OPT)
+#CFLAGS += $(OPT)
 CFLAGS += -DBOARD_PCA10040
 CFLAGS += -DCONFIG_GPIO_AS_PINRESET
 CFLAGS += -DFLOAT_ABI_HARD
@@ -259,7 +273,7 @@ CFLAGS += -ffunction-sections -fdata-sections -fno-strict-aliasing
 CFLAGS += -fno-builtin -fshort-enums
 
 # C++ flags common to all targets
-CXXFLAGS += $(OPT)
+#CXXFLAGS += $(OPT)
 
 # Assembler flags common to all targets
 ASMFLAGS += -g3
@@ -278,7 +292,7 @@ ASMFLAGS += -DSOFTDEVICE_PRESENT
 ASMFLAGS += -DSWI_DISABLE0
 
 # Linker flags
-LDFLAGS += $(OPT)
+#LDFLAGS += $(OPT)
 LDFLAGS += -mthumb -mabi=aapcs -L$(SDK_ROOT)/modules/nrfx/mdk -T$(LDSCRIPT)
 LDFLAGS += -mcpu=cortex-m4
 LDFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
@@ -296,26 +310,40 @@ nrf52832_xxaa: ASMFLAGS += -D__STACK_SIZE=8192
 # that may need symbols provided by these libraries.
 LIB_FILES += -lc -lnosys -lm
 
+OPT_DEFS += -DPROTOCOL_NRF
 
-.PHONY: default help
+##############################################################################
+# Compiler settings
+#
+CC = arm-none-eabi-gcc
+OBJCOPY = arm-none-eabi-objcopy
+OBJDUMP = arm-none-eabi-objdump
+SIZE = arm-none-eabi-size
+AR = arm-none-eabi-ar
+NM = arm-none-eabi-nm
+HEX = $(OBJCOPY) -O $(FORMAT)
+EEP =
+BIN = $(OBJCOPY) -O binary
+
+#.PHONY: default help
 
 # Default target - first one defined
-default: nrf52832_xxaa
+#default: nrf52832_xxaa
 
 # Print all targets that can be built
-help:
-	@echo following targets are available:
-	@echo		nrf52832_xxaa
-	@echo		flash_softdevice
-	@echo		sdk_config - starting external tool for editing sdk_config.h
-	@echo		flash      - flashing binary
+#help:
+#	@echo following targets are available:
+#	@echo		nrf52832_xxaa
+#	@echo		flash_softdevice
+#	@echo		sdk_config - starting external tool for editing sdk_config.h
+#	@echo		flash      - flashing binary
 
-TEMPLATE_PATH := $(SDK_ROOT)/components/toolchain/gcc
+#TEMPLATE_PATH := $(SDK_ROOT)/components/toolchain/gcc
 
 
-include $(TEMPLATE_PATH)/Makefile.common
+#include $(TEMPLATE_PATH)/Makefile.common
 
-$(foreach target, $(TARGETS), $(call define_target, $(target)))
+#$(foreach target, $(TARGETS), $(call define_target, $(target)))
 
 .PHONY: flash flash_softdevice erase
 
