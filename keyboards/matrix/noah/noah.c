@@ -8,15 +8,16 @@
 #include <string.h>
 #include "rgblight.h"
 #include "ws2812_f4.h"
+#include "eeprom.h"
 extern rgblight_config_t rgblight_config;
-
+#define EECONFIG_NOAH_MODE  64
+static bool noah_led_mode;
 // led 0 for caps lock, led 1 for scroll lock, led 3 for num lock
 // led 4 for layer 1, led 5 for layer 2, led 6 for layer 3, led 7 for layer 4
 #if RGBLED_NUM < 7
 #error "MUST set the RGBLED_NUM bigger than 7"
 #endif
 LED_TYPE noah_leds[RGBLED_NUM];
-static bool noah_led_mode = false;
 void rgblight_set(void) {
     memset(&noah_leds[0], 0, sizeof(noah_leds));
     if (!rgblight_config.enable) {
@@ -29,49 +30,47 @@ void rgblight_set(void) {
     if (noah_led_mode) {
       uint8_t ind_led = host_keyboard_leds();
       if (IS_LED_ON(ind_led, USB_LED_CAPS_LOCK)) {
-        noah_leds[0] = led[0];
+        noah_leds[6] = led[0];
       }
       if (IS_LED_ON(ind_led, USB_LED_SCROLL_LOCK)) {
-        noah_leds[1] = led[1];
+        noah_leds[5] = led[1];
       }
       if (IS_LED_ON(ind_led, USB_LED_NUM_LOCK)) {
-        noah_leds[2] = led[2];
+        noah_leds[4] = led[2];
       }
       for (int32_t i = 0; i < 4; i++) {
         if(layer_state_is(i+1)) {
-          noah_leds[i + 3] = led[i + 3];
+          noah_leds[3 - i] = led[i + 3];
         }
       }
     } else {
-      memcpy(&noah_leds[0], &led[0], sizeof(noah_leds));
+        for(uint8_t i = 0; i < RGBLED_NUM; i++) {
+            noah_leds[RGBLED_NUM-i-1] = led[i];
+        }
     }
 
   ws2812_setleds(noah_leds, RGBLED_NUM);
 }
 #endif
 
+__attribute__((weak))
 void matrix_scan_kb(void) { matrix_scan_user(); }
 
 void matrix_init_kb(void) {
-  matrix_init_user();
+#ifdef RGBLIGHT_ENABLE
+    noah_led_mode = eeprom_read_byte((uint8_t*)(uint32_t*)EECONFIG_NOAH_MODE);
+    ws2812_init();
+    rgblight_set();
+#endif
+    matrix_init_user();
 }
 __attribute__((weak))
 void matrix_init_user(void) {
-#ifdef RGBLIGHT_ENABLE
-  ws2812_init();
-  rgblight_enable();
-#endif
 
-#ifdef RGB_MATRIX_ENABLE
-  rgb_matrix_disable();
-#endif
 }
 
 __attribute__((weak))
 void matrix_scan_user(void) {
-#ifdef RGBLIGHT_ENABLE
-  rgblight_task();
-#endif
 }
 
 
@@ -224,6 +223,8 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
     #ifdef RGBLIGHT_ENABLE
         case KC_F24: // switch the led mode on or off
         noah_led_mode = !noah_led_mode;
+        eeprom_write_byte((uint8_t*)(uint32_t*)EECONFIG_NOAH_MODE, noah_led_mode);
+        rgblight_set();
         return false;
 
     #ifdef RGB_MATRIX_ENABLE
@@ -232,6 +233,15 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
         return false;
         case KC_F14:
         rgb_matrix_step();
+        return false;
+        case KC_F15:
+        rgb_matrix_increase_hue();
+        return false;
+        case KC_F16:
+        rgb_matrix_increase_sat();
+        return false;
+        case KC_F17:
+        rgb_matrix_increase_val();
         return false;
     #endif
     #endif
