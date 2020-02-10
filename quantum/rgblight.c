@@ -25,6 +25,8 @@
 #ifdef STM32_EEPROM_ENABLE
 #    include "hal.h"
 #    include "eeprom_stm32.h"
+#else
+#    include "eeprom.h"
 #endif
 #include "wait.h"
 #include "progmem.h"
@@ -299,11 +301,11 @@ void rgblight_mode_eeprom_helper(uint8_t mode, bool write_to_eeprom) {
     } else {
         dprintf("rgblight mode [NOEEPROM]: %u\n", rgblight_config.mode);
     }
-    if (is_static_effect(rgblight_config.mode)) {
+    /*if (is_static_effect(rgblight_config.mode)) {
 #ifdef RGBLIGHT_USE_TIMER
         rgblight_timer_disable();
 #endif
-    } else {
+    } else*/ {
 #ifdef RGBLIGHT_USE_TIMER
         rgblight_timer_enable();
 #endif
@@ -311,6 +313,9 @@ void rgblight_mode_eeprom_helper(uint8_t mode, bool write_to_eeprom) {
 #ifdef RGBLIGHT_USE_TIMER
     animation_status.restart = true;
 #endif
+    rgblight_config.hue    = 0;
+    rgblight_config.sat    = UINT8_MAX;
+    rgblight_config.val    = RGBLIGHT_LIMIT_VAL;
     rgblight_sethsv_noeeprom(rgblight_config.hue, rgblight_config.sat, rgblight_config.val);
 }
 
